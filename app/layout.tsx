@@ -28,7 +28,7 @@ const navItems = [
 ]
 
 const sidebarItems = [
-  { name: "All Games", icon: "🎮", href: "/all-games" },
+  { name: "All Games", icon: "🎮", href: "/" },
   { name: "Favorites", icon: "⭐", href: "/favorites" },
   { name: "Recently Played", icon: "🕒", href: "/recently-played" },
   { name: "Categories", icon: "📁", href: "/categories" },

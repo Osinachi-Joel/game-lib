@@ -5,24 +5,24 @@ import { useState } from "react"
 
 import { Button } from "@/components/ui/button"
 import { GameCard } from "./game-card"
+import bookmarkData from "../bookmark-edit.json"
 
-const initialGames = [
-  { id: 1, name: "The Legend of Zelda", icon: "/placeholder.svg?height=64&width=64" },
-  { id: 2, name: "Super Mario Odyssey", icon: "/placeholder.svg?height=64&width=64" },
-  { id: 3, name: "Elden Ring", icon: "/placeholder.svg?height=64&width=64" },
-  { id: 4, name: "Stardew Valley", icon: "/placeholder.svg?height=64&width=64" },
-  { id: 5, name: "Hades", icon: "/placeholder.svg?height=64&width=64" },
-  { id: 6, name: "Minecraft", icon: "/placeholder.svg?height=64&width=64" },
-]
+const initialGames = bookmarkData.map((game) => ({
+  id: game.add_date,
+  name: game.title,
+  icon: "/placeholder.svg?height=64&width=64",
+  url: game.url
+}))
 
 export function GameLibrary() {
   const [games, setGames] = useState(initialGames)
 
   const addGame = () => {
     const newGame = {
-      id: games.length + 1,
-      name: `New Game ${games.length + 1}`,
+      id: Math.floor(Date.now() / 1000),
+      name: `New Game`,
       icon: "/placeholder.svg?height=64&width=64",
+      url: ""
     }
     setGames([...games, newGame])
   }
@@ -38,7 +38,7 @@ export function GameLibrary() {
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
           {games.map((game) => (
-            <GameCard key={game.id} name={game.name} icon={game.icon} />
+            <GameCard key={game.id} name={game.name} icon={game.icon} url={game.url} />
           ))}
         </div>
       </main>
