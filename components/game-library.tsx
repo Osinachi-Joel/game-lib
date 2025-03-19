@@ -1,30 +1,43 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { Plus } from "lucide-react"
-import { useState } from "react"
-
 import { Button } from "@/components/ui/button"
 import { GameCard } from "./game-card"
-import bookmarkData from "../bookmark-edit.json"
 
-const initialGames = bookmarkData.map((game) => ({
-  id: game.add_date,
-  name: game.title,
-  icon: "/placeholder.svg?height=64&width=64",
-  url: game.url
-}))
+interface Game {
+  id: number
+  name: string
+  icon: string
+  url: string
+}
 
 export function GameLibrary() {
-  const [games, setGames] = useState(initialGames)
+  const [games, setGames] = useState<Game[]>([])
+
+  useEffect(() => {
+    import("../bookmark-edit.json").then((data) => {
+      setGames(
+        (data.default as { add_date: number; title: string; icon?: string; url: string }[]).map((game) => ({
+          id: game.add_date,
+          name: game.title,
+          icon: game.icon || "/placeholder.svg?height=64&width=64",
+          url: game.url,
+        }))
+      )
+    })
+  }, [])
 
   const addGame = () => {
-    const newGame = {
-      id: Math.floor(Date.now() / 1000),
-      name: `New Game`,
-      icon: "/placeholder.svg?height=64&width=64",
-      url: ""
-    }
-    setGames([...games, newGame])
+    setGames((prev: Game[]) => [
+      ...prev,
+      {
+        id: Math.floor(Date.now() / 1000),
+        name: "New Game",
+        icon: "/placeholder.svg?height=64&width=64",
+        url: ""
+      }
+    ])
   }
 
   return (
