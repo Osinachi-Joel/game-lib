@@ -44,10 +44,13 @@ export function GameLibrary() {
     <div className="flex-1 bg-gray-900 overflow-auto">
       <main className="p-6">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-[#E4E4E4]">All Games</h1>
+          <div className="flex flex-col gap-2">
+            <h1 className="text-2xl font-bold text-[#E4E4E4]">All Games</h1>
+            <p className="text-gray-400">Distractions for your delight - AH</p>
+          </div>
           <Button 
             onClick={addGame}
-            className="bg-[#ce1111] text-[#FDF0D5] hover:bg-[#ce1111]/80"
+            className="bg-[#A4031F] text-[#FDF0D5] hover:bg-[#A4031F]/80"
           >
             <Plus className="mr-2 h-4 w-4" /> Add Game
           </Button>

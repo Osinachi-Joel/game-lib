@@ -33,7 +33,7 @@ export default function SidebarComponent() {
   return (
     <div className="flex w-full h-screen">
       <Sidebar open={open} setOpen={setOpen}>
-        <SidebarBody className="justify-between gap-10 bg-[#ce1111] border-r border-[#2C2C2C] shadow-md">
+        <SidebarBody className="justify-between gap-10 bg-[#A4031F] border-r border-[#2C2C2C] shadow-md">
           <div className="flex flex-1 flex-col overflow-x-hidden overflow-y-auto">
             {open ? <Logo /> : <LogoIcon />}
             <div className="mt-8 flex flex-col gap-2">
@@ -58,7 +58,7 @@ export const Logo = () => {
         animate={{ opacity: 1 }}
         className="font-medium whitespace-pre text-[#669BBC]"
       >
-        Acet Labs
+        Game Labs
       </motion.span>
     </a>
   )
