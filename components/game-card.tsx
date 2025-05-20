@@ -1,8 +1,10 @@
+"use client"
+
 import { useState, useEffect } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { Card, CardContent } from "@/components/ui/card"
-import {  Clock, Eye } from "lucide-react"
+import { Card } from "@/components/ui/card"
+import { Clock, Eye } from "lucide-react"
 
 interface GameCardProps {
   name: string
@@ -36,7 +38,7 @@ export function GameCard({ name, icon = "/placeholder.svg?height=64&width=64", u
           localStorage.setItem(`game-${name}`, JSON.stringify(gameResult))
         }
       } catch (error) {
-        console.error('Error fetching game data:', error)
+        console.error("Error fetching game data:", error)
       }
     }
 
@@ -45,41 +47,49 @@ export function GameCard({ name, icon = "/placeholder.svg?height=64&width=64", u
 
   return (
     <Link href={url} target="_blank" rel="noopener noreferrer">
-      <Card className="group relative overflow-hidden hover:shadow-xl transition-all duration-300 bg-black/90 border-0 hover:ring-2 hover:ring-red-500/20">
-        <CardContent className="p-0">
-          <div className="aspect-[2/3] relative">
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent z-10" />
-            <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/70 z-10" />
-            <Image 
-              src={gameData?.background_image || icon} 
+      <Card className="p-0 group relative overflow-hidden hover:shadow-xl transition-all duration-300 bg-black/90 border-0 hover:ring-2 hover:ring-red-500/20">
+        <div className="aspect-[2/3] w-full relative">
+          {/* Background Image */}
+          <div className="absolute inset-0 w-full h-full">
+            <Image
+              src={gameData?.background_image || icon}
               alt={name}
-              fill 
-              className="object-cover brightness-75 group-hover:scale-105 group-hover:brightness-90 transition-all duration-500" 
+              fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              className="object-cover w-full h-full group-hover:scale-105 group-hover:brightness-100 transition-all duration-500 brightness-70"
+              style={{ objectPosition: "center" }}
+              priority={false}
             />
-            <div className="absolute bottom-0 left-0 right-0 p-4 z-20">
-              <h3 
-                className="font-bold text-2xl text-white drop-shadow-lg tracking-wider mb-2 font-cinematic truncate" 
-                title={name}
-              >
-                {name}
-              </h3>
-              <div className="flex items-center gap-4 text-sm text-white/80">
-                {gameData?.released && (
-                  <div className="flex items-center gap-1">
-                    <Clock className="w-4 h-4" />
-                    <span>{new Date(gameData.released).getFullYear()}</span>
-                  </div>
-                )}
-                {gameData?.ratings_count && (
-                  <div className="flex items-center gap-1">
-                    <Eye className="w-4 h-4" />
-                    <span>{gameData.ratings_count.toLocaleString()}</span>
-                  </div>
-                )}
-              </div>
+          </div>
+
+          {/* Gradients for text visibility */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent z-10" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/70 z-10" />
+
+          {/* Content overlay */}
+          <div className="absolute bottom-0 left-0 right-0 p-4 z-20">
+            <h3
+              className="font-bold text-2xl text-white drop-shadow-lg tracking-wider mb-2 font-cinematic truncate"
+              title={name}
+            >
+              {name}
+            </h3>
+            <div className="flex items-center gap-4 text-sm text-white/80">
+              {gameData?.released && (
+                <div className="flex items-center gap-1">
+                  <Clock className="w-4 h-4" />
+                  <span>{new Date(gameData.released).getFullYear()}</span>
+                </div>
+              )}
+              {gameData?.ratings_count && (
+                <div className="flex items-center gap-1">
+                  <Eye className="w-4 h-4" />
+                  <span>{gameData.ratings_count.toLocaleString()}</span>
+                </div>
+              )}
             </div>
           </div>
-        </CardContent>
+        </div>
       </Card>
     </Link>
   )
