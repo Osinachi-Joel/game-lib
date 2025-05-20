@@ -18,9 +18,9 @@ export function GameLibrary() {
   useEffect(() => {
     import("../bookmark-edit.json").then((data) => {
       setGames(
-        (data.default as { add_date: number; title: string; icon?: string; url: string }[]).map((game) => ({
-          id: game.add_date,
-          name: game.title,
+        (data.default as { id: number; name: string; icon: string | null; url: string }[]).map((game) => ({
+          id: game.id,
+          name: game.name,
           icon: game.icon || "/placeholder.svg?height=64&width=64",
           url: game.url,
         }))
@@ -41,13 +41,13 @@ export function GameLibrary() {
   }
 
   return (
-    <div className="flex-1 bg-[#0E1525] overflow-auto pt-28">
+    <div className="flex-1 bg-gray-900 overflow-auto">
       <main className="p-6">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-[#8CEAF4]">All Games</h1>
+          <h1 className="text-2xl font-bold text-[#E4E4E4]">All Games</h1>
           <Button 
             onClick={addGame}
-            className="bg-[#18181B] text-[#8CEAF4] hover:bg-[#18181B]/80"
+            className="bg-[#ce1111] text-[#FDF0D5] hover:bg-[#ce1111]/80"
           >
             <Plus className="mr-2 h-4 w-4" /> Add Game
           </Button>
