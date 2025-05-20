@@ -26,7 +26,7 @@ export default async function handler(
     }
 
     const { search } = req.query;
-    const searchParam = search ? `&search=${encodeURIComponent(search as string)}&search_exact=true` : '';
+    const searchParam = search ? `&search=${encodeURIComponent(search as string)}&search_precise=true` : '';
 
     const response = await fetch(`https://api.rawg.io/api/games?key=${apiKey}${searchParam}`);
     const data = await response.json();
