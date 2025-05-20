@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Plus, Search } from "lucide-react"
+import { Globe, Plus, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { GameCard } from "./game-card"
@@ -44,6 +44,11 @@ export function GameLibrary() {
     ])
   }
 
+  const scanBookmarks = () => {
+    console.log("Scanning bookmarks...")
+    // Implement bookmark scanning logic here
+  }
+
   return (
     <div className="flex-1 bg-gray-900 overflow-auto">
       <main className="p-6">
@@ -53,12 +58,22 @@ export function GameLibrary() {
               <h1 className="text-2xl font-bold text-[#E4E4E4]">All Games</h1>
               <p className="text-gray-400">Distractions for your delight - AH</p>
             </div>
-            <Button 
-              onClick={addGame}
-              className="bg-[#A4031F] text-[#FDF0D5] hover:bg-[#A4031F]/80"
-            >
-              <Plus className="mr-2 h-4 w-4" /> Add Game
-            </Button>
+
+            <div className="flex gap-2 items-center">
+              <Button
+                onClick={addGame}
+                className="bg-[#A4031F] text-[#FDF0D5] hover:bg-[#A4031F]/80 cursor-pointer"
+              >
+                <Plus className="h-4 w-4" /> Add Game
+              </Button>
+
+              <Button
+                onClick={scanBookmarks}
+                className="bg-[#03a474] text-[#FDF0D5] hover:bg-[#03a474]/80 cursor-pointer"
+              >
+                <Globe className="h-4 w-4" />Scan
+              </Button>
+            </div>
           </div>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -71,7 +86,7 @@ export function GameLibrary() {
             />
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-            {games.filter(game => 
+            {games.filter(game =>
               game.name.toLowerCase().includes(searchQuery.toLowerCase())
             ).map((game) => (
               <GameCard key={game.id} name={game.name} icon={game.icon} url={game.url} />
