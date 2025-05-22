@@ -15,6 +15,7 @@ interface Game {
 
 export function GameLibrary() {
   const [games, setGames] = useState<Game[]>([])
+  const [scanedGames, setScanedGames] = useState<Game[]>([])
   const [searchQuery, setSearchQuery] = useState('')
 
   useEffect(() => {
@@ -44,9 +45,16 @@ export function GameLibrary() {
     ])
   }
 
-  const scanBookmarks = () => {
-    console.log("Scanning bookmarks...")
-    // Implement bookmark scanning logic here
+  const scanBookmarks = async () => {
+    try {
+      const response = await fetch('/api/scan-bookmarks');
+      const data = await response.json();
+      console.log(data);
+      // Update the state with the scanned game
+      setScanedGames(data);
+    } catch (error) {
+      console.error('Failed to scan bookmarks:', error);
+    }
   }
 
   return (
@@ -91,6 +99,14 @@ export function GameLibrary() {
             ).map((game) => (
               <GameCard key={game.id} name={game.name} icon={game.icon} url={game.url} />
             ))}
+          </div>
+          <div className="mt-8">
+            <h2 className="text-xl font-bold text-[#E4E4E4] mb-4">Scanned Games</h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+              {scanedGames.map((game) => (
+                <GameCard key={game.id} name={game.name} icon={game.icon} url={game.url} />
+              ))}
+            </div>
           </div>
         </div>
       </main>
