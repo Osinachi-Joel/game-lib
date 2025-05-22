@@ -75,6 +75,10 @@ async function scanForBookmarkFiles(baseDir) {
   return Array.from(candidates);
 }
 
+function uniqueId() {
+  return `${Date.now()}-${Math.floor(Math.random() * 100000)}`;
+}
+
 async function parseBookmarkFile(filePath) {
   const ext = path.extname(filePath).toLowerCase();
   console.log(`→ Parsing ${filePath} (ext=${ext})`);
@@ -96,7 +100,7 @@ async function parseBookmarkFile(filePath) {
         JOIN moz_places p ON b.fk = p.id
         WHERE LOWER(b.title) LIKE '%game%' OR LOWER(b.title) LIKE '%games%'
       `);
-      rows.forEach(r => items.push({ id: Date.now() * 1000, name: r.title, url: r.url, icon: null }));
+      rows.forEach(r => items.push({ id: uniqueId(), name: r.title, url: r.url, icon: null }));
       db.close();
       await fs.unlink(tmp).catch(() => {});
     } else if (ext === '.plist' && plist) {
@@ -111,7 +115,7 @@ async function parseBookmarkFile(filePath) {
   allBookmarks.push(...items);
 }
 
-// ✅ Modified: collect only bookmarks inside folders named "Games"
+// Chromium-based bookmarks inside "Games" folders only
 function extractChromium(node, acc, inGamesFolder = false) {
   if (Array.isArray(node)) {
     node.forEach(n => extractChromium(n, acc, inGamesFolder));
@@ -124,7 +128,7 @@ function extractChromium(node, acc, inGamesFolder = false) {
     }
 
     if (inGamesFolder && node.type === 'url') {
-      acc.push({ id: Date.now() * 1000, name: node.name, url: node.url, icon: null });
+      acc.push({ id: uniqueId(), name: node.name, url: node.url, icon: null });
     }
 
     if (node.children) {
@@ -135,7 +139,7 @@ function extractChromium(node, acc, inGamesFolder = false) {
   }
 }
 
-// ✅ Modified: Safari bookmarks inside "Games" folders only
+// Safari bookmarks inside "Games" folders only
 function recursePlist(nodes, acc, inGamesFolder = false) {
   if (!Array.isArray(nodes)) return;
   for (const node of nodes) {
@@ -143,7 +147,7 @@ function recursePlist(nodes, acc, inGamesFolder = false) {
     const nowInGamesFolder = inGamesFolder || isGamesFolder;
 
     if (nowInGamesFolder && node.WWWebBookmarkType === 'WebBookmarkTypeLeaf') {
-      acc.push({ id: Date.now() * 1000, name: node.URIDictionary?.title, url: node.URLString, icon: null });
+      acc.push({ id: uniqueId(), name: node.URIDictionary?.title, url: node.URLString, icon: null });
     }
 
     if (Array.isArray(node.Children)) {
@@ -181,11 +185,16 @@ function recursePlist(nodes, acc, inGamesFolder = false) {
     console.log(`\nCreated results directory: ${outDir}`);
   }
 
-  if (allBookmarks.length > 0) {
+  // Deduplicate bookmarks based on name + url
+  const deduped = Array.from(
+    new Map(allBookmarks.map(b => [`${b.name}|${b.url}`, b])).values()
+  );
+
+  if (deduped.length > 0) {
     const stamp = new Date().toISOString().replace(/[:.]/g, '');
     const outFile = path.join(outDir, `game_bookmarks_${stamp}.json`);
-    await fs.writeFile(outFile, JSON.stringify(allBookmarks, null, 2), 'utf8');
-    console.log(`\n✨ Saved ${allBookmarks.length} bookmarks to:\n   ${outFile}`);
+    await fs.writeFile(outFile, JSON.stringify(deduped, null, 2), 'utf8');
+    console.log(`\n✨ Saved ${deduped.length} unique bookmarks to:\n   ${outFile}`);
   } else {
     console.log('\n⚠ No game‑related bookmarks were found.');
   }
