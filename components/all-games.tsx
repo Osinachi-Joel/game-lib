@@ -6,7 +6,7 @@ import { IconArrowLeft, IconBrandTabler, IconSettings, IconUserBolt } from "@tab
 import { motion } from "motion/react"
 import { GameLibrary } from "@/components/game-library";
 
-export default function SidebarComponent() {
+export default function AllGames() {
   const links = [
     {
       label: "Dashboard",

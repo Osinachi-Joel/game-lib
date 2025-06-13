@@ -1,11 +1,10 @@
 // import { GameLibrary } from "@/components/game-library";
-import SidebarComponent from "@/components/sidebar-component";
+import AllGames from "@/components/all-games";
 
 export default function Home() {
   return (
     <>
-    <SidebarComponent/>
-   {/* <GameLibrary /> */}
+    <AllGames/>
    </>
   );
 }

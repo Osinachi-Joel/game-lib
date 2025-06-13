@@ -5,6 +5,7 @@ import { promisify } from 'util';
 
 const execAsync = promisify(exec);
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default async function handler(req: any, res: any) {
   try {
     // Run the bookmark scanner script

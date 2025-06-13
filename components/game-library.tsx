@@ -1,10 +1,11 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Globe, Plus, Search } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { Search } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { GameCard } from "./game-card"
+import { AddGame } from "./utility/add-game"
+import { ScanBookmarks } from "./utility/scan-bookmarks"
 
 interface Game {
   id: number
@@ -15,7 +16,7 @@ interface Game {
 
 export function GameLibrary() {
   const [games, setGames] = useState<Game[]>([])
-  const [scanedGames, setScanedGames] = useState<Game[]>([])
+  const [scannedGames, setScannedGames] = useState<Game[]>([])
   const [searchQuery, setSearchQuery] = useState('')
 
   useEffect(() => {
@@ -33,28 +34,12 @@ export function GameLibrary() {
     })
   }, [])
 
-  const addGame = () => {
-    setGames((prev: Game[]) => [
-      ...prev,
-      {
-        id: Math.floor(Date.now() / 1000),
-        name: "New Game",
-        icon: "/placeholder.svg?height=64&width=64",
-        url: ""
-      }
-    ])
+  const handleAddGame = (newGame: Game) => {
+    setGames((prev: Game[]) => [...prev, newGame])
   }
 
-  const scanBookmarks = async () => {
-    try {
-      const response = await fetch('/api/scan-bookmarks');
-      const data = await response.json();
-      console.log(data);
-      // Update the state with the scanned game
-      setScanedGames(data);
-    } catch (error) {
-      console.error('Failed to scan bookmarks:', error);
-    }
+  const handleScanComplete = (games: Game[]) => {
+    setScannedGames(games)
   }
 
   return (
@@ -68,19 +53,8 @@ export function GameLibrary() {
             </div>
 
             <div className="flex gap-2 items-center">
-              <Button
-                onClick={addGame}
-                className="bg-[#A4031F] text-[#FDF0D5] hover:bg-[#A4031F]/80 cursor-pointer"
-              >
-                <Plus className="h-4 w-4" /> Add Game
-              </Button>
-
-              <Button
-                onClick={scanBookmarks}
-                className="bg-[#03a474] text-[#FDF0D5] hover:bg-[#03a474]/80 cursor-pointer"
-              >
-                <Globe className="h-4 w-4" />Scan
-              </Button>
+              <AddGame onAddGame={handleAddGame} />
+              <ScanBookmarks onScanComplete={handleScanComplete} />
             </div>
           </div>
           <div className="relative">
@@ -90,7 +64,7 @@ export function GameLibrary() {
               placeholder="Search games..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 bg-black/20 border-gray-800 text-white placeholder-gray-400 focus:ring-[#A4031F] focus:border-[#A4031F]"
+              className="pl-10 w-1/6 bg-black/20 border-gray-800 text-white placeholder-gray-400 focus:ring-[#A4031F] focus:border-[#A4031F]"
             />
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
@@ -103,7 +77,7 @@ export function GameLibrary() {
           <div className="mt-8">
             <h2 className="text-xl font-bold text-[#E4E4E4] mb-4">Scanned Games</h2>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-              {scanedGames.map((game) => (
+              {scannedGames.map((game) => (
                 <GameCard key={game.id} name={game.name} icon={game.icon} url={game.url} />
               ))}
             </div>
