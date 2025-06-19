@@ -1,7 +1,9 @@
 "use client"
 
+import { useState } from "react"
 import { Globe } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Spinner } from "@/components/ui/spinner"
 import {
   Dialog,
   DialogContent,
@@ -11,6 +13,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface Game {
   id: number
   name: string
@@ -19,23 +22,29 @@ interface Game {
 }
 
 interface ScanBookmarksProps {
-  onScanComplete: (games: Game[]) => void
+  onScanComplete: () => void
 }
 
 export function ScanBookmarks({ onScanComplete }: ScanBookmarksProps) {
+  const [isScanning, setIsScanning] = useState(false)
+  const [open, setOpen] = useState(false)
+
   const handleScan = async () => {
+    setIsScanning(true)
     try {
-      const response = await fetch('/api/scan-bookmarks')
-      const data = await response.json()
-      console.log(data)
-      onScanComplete(data)
+      await fetch('/api/scan-bookmarks')
+      await onScanComplete()
+      setOpen(false)
+      setIsScanning(false)
     } catch (error) {
       console.error('Failed to scan bookmarks:', error)
+    } finally {
+      setIsScanning(false)
     }
   }
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button
           className="bg-[#03a474] text-[#FDF0D5] hover:bg-[#03a474]/80 cursor-pointer"
@@ -62,9 +71,17 @@ export function ScanBookmarks({ onScanComplete }: ScanBookmarksProps) {
         <div className="flex justify-end mt-4">
           <Button
             onClick={handleScan}
-            className="bg-[#03a474] text-[#FDF0D5] hover:bg-[#03a474]/80"
+            className="bg-[#03a474] text-[#FDF0D5] hover:bg-[#03a474]/80 flex items-center gap-2"
+            disabled={isScanning}
           >
-            Start Scan
+            {isScanning ? (
+              <>
+                <Spinner />
+                Scanning...
+              </>
+            ) : (
+              'Start Scan'
+            )}
           </Button>
         </div>
       </DialogContent>

@@ -4,6 +4,7 @@ import { Plus } from "lucide-react"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Spinner } from "@/components/ui/spinner"
 import {
   Dialog,
   DialogContent,
@@ -14,7 +15,7 @@ import {
 } from "@/components/ui/dialog"
 
 interface Game {
-  id: number
+  id: string
   name: string
   icon: string
   url: string
@@ -28,18 +29,27 @@ export function AddGame({ onAddGame }: AddGameProps) {
   const [open, setOpen] = useState(false)
   const [gameName, setGameName] = useState("")
   const [gameUrl, setGameUrl] = useState("")
+  const [isAdding, setIsAdding] = useState(false)
 
-  const handleAddGame = () => {
+  const handleAddGame = async () => {
+    setIsAdding(true)
     const newGame: Game = {
-      id: Math.floor(Date.now() / 1000),
+      id: Date.now() + '-' + Math.random().toString(36).substr(2, 5),
       name: gameName || "New Game",
       icon: "/placeholder.svg?height=64&width=64",
       url: gameUrl
     }
-    onAddGame(newGame)
-    setOpen(false)
-    setGameName("")
-    setGameUrl("")
+
+    try {
+      await onAddGame(newGame)
+      setOpen(false)
+      setGameName("")
+      setGameUrl("")
+    } catch (error) {
+      console.error('Error adding game:', error)
+    } finally {
+      setIsAdding(false)
+    }
   }
 
   return (
@@ -80,7 +90,16 @@ export function AddGame({ onAddGame }: AddGameProps) {
           </div>
         </div>
         <DialogFooter>
-          <Button onClick={handleAddGame}>Add Game</Button>
+          <Button onClick={handleAddGame} disabled={isAdding}>
+            {isAdding ? (
+              <>
+                <Spinner />
+                Adding...
+              </>
+            ) : (
+              'Add Game'
+            )}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>)

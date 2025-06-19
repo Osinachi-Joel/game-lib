@@ -6,40 +6,86 @@ import { Input } from "@/components/ui/input"
 import { GameCard } from "./game-card"
 import { AddGame } from "./utility/add-game"
 import { ScanBookmarks } from "./utility/scan-bookmarks"
+import { Spinner } from "./ui/spinner"
 
 interface Game {
-  id: number
+  id: string
   name: string
   icon: string
   url: string
 }
 
 export function GameLibrary() {
-  const [games, setGames] = useState<Game[]>([])
   const [scannedGames, setScannedGames] = useState<Game[]>([])
   const [searchQuery, setSearchQuery] = useState('')
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    import("../bookmark-edit.json").then((data) => {
-      setGames(
-        (data.default as { id: number; name: string; icon: string | null; url: string }[]).map((game) => ({
-          id: game.id,
-          name: game.name,
-          icon: game.icon || "/placeholder.svg?height=64&width=64",
-          url: game.url,
-        }))
-      )
-    }).catch((error) => {
-      console.error("Failed to load bookmark-edit.json:", error)
-    })
+    const fetchGames = async () => {
+      setIsLoading(true)
+      try {
+        const response = await fetch('/api/get-games')
+        if (!response.ok) {
+          console.error('Failed to fetch bookmarks')
+          setScannedGames([])
+          return
+        }
+        const games = await response.json()
+        setScannedGames(games)
+      } catch (error) {
+        console.error('Error fetching bookmarks:', error)
+        setScannedGames([])
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    
+    fetchGames()
   }, [])
 
-  const handleAddGame = (newGame: Game) => {
-    setGames((prev: Game[]) => [...prev, newGame])
+
+  const handleAddGame = async (newGame: Game) => {
+    setIsLoading(true)
+    try {
+      const gameWithId = {
+        ...newGame,
+        id: Date.now() + '-' + Math.random().toString(36).substr(2, 5)
+      }
+      const response = await fetch('/api/add-game', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(gameWithId),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to add game')
+      }
+
+      // Add the new game to the existing games array
+      setScannedGames(prevGames => [...prevGames, gameWithId])
+    } catch (error) {
+      console.error('Error adding game:', error)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
-  const handleScanComplete = (games: Game[]) => {
-    setScannedGames(games)
+  const handleScanComplete = async () => {
+    try {
+      const response = await fetch('/api/get-bookmarks');
+      if (!response.ok) {
+        console.error('Failed to fetch bookmarks');
+        setScannedGames([]);
+        return;
+      }
+      const games = await response.json();
+      setScannedGames(games);
+    } catch (error) {
+      console.error('Error fetching bookmarks:', error);
+      setScannedGames([]);
+    }
   }
 
   return (
@@ -64,23 +110,37 @@ export function GameLibrary() {
               placeholder="Search games..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 w-1/6 bg-black/20 border-gray-800 text-white placeholder-gray-400 focus:ring-[#A4031F] focus:border-[#A4031F]"
+              className="pl-10 w-1/6 bg-white/20 border-gray-800 text-white placeholder-gray-400 focus:ring-[#A4031F] focus:border-[#A4031F]"
             />
           </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-            {games.filter(game =>
+            {/* {games.filter(game =>
               game.name.toLowerCase().includes(searchQuery.toLowerCase())
             ).map((game) => (
               <GameCard key={game.id} name={game.name} icon={game.icon} url={game.url} />
-            ))}
+            ))} */}
           </div>
           <div className="mt-8">
-            <h2 className="text-xl font-bold text-[#E4E4E4] mb-4">Scanned Games</h2>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-              {scannedGames.map((game) => (
-                <GameCard key={game.id} name={game.name} icon={game.icon} url={game.url} />
-              ))}
-            </div>
+            {isLoading ? (
+              <div className="flex justify-center items-center min-h-[60vh]">
+                <Spinner />
+              </div>
+            ) : scannedGames.length === 0 ? (
+              <div className="flex justify-center items-center min-h-[60vh]">
+                <div className="text-center text-gray-400">
+                  <p>No games found in the database.</p>
+                  <p>Please add games manually or scan your bookmarks to get started.</p>
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                {scannedGames.filter(game =>
+                  game.name.toLowerCase().includes(searchQuery.toLowerCase())
+                ).map((game) => (
+                  <GameCard key={game.id} name={game.name} icon={game.icon} url={game.url} />
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </main>
