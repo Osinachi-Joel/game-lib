@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { promises as fs } from 'fs';
 import path from 'path';
 import { exec } from 'child_process';
@@ -12,7 +13,6 @@ if (!process.env.MONGODB_URI) {
 
 const client = new MongoClient(process.env.MONGODB_URI);
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export default async function handler(req: any, res: any) {
   try {
     // Run the bookmark scanner script
@@ -36,32 +36,30 @@ export default async function handler(req: any, res: any) {
     // Connect to MongoDB and store the data
     await client.connect();
     const database = client.db('game-library');
-    const collection = database.collection('bookmarks');
+    const collection = database.collection('games');
     
-    // Get existing games from MongoDB
-    const latestBookmarks = await collection.findOne(
-      {},
-      { sort: { timestamp: -1 } }
-    );
+    // Get existing game URLs to check for duplicates
+    const existingGames = await collection.find({}, { projection: { url: 1 } }).toArray();
+    const existingUrls = new Set(existingGames.map(game => game.url));
 
-    // Convert bookmarks object to array and merge with existing games
-    const existingGames = latestBookmarks?.bookmarks || [];
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const newGames = Object.values(bookmarks).map((game: any) => ({
-      id: Date.now() + '-' + Math.random().toString(36).substr(2, 5),
-      name: game.name,
-      url: game.url,
-      icon: game.icon
-    }));
+    // Filter out duplicates and create new game documents
+    const newGames = Object.values(bookmarks)
+      .filter((game: any) => !existingUrls.has(game.url))
+      .map((game: any) => ({
+        id: Date.now() + '-' + Math.random().toString(36).substr(2, 5),
+        name: game.name,
+        url: game.url,
+        icon: game.icon,
+        createdAt: new Date()
+      }));
 
-    // Store merged games
-    await collection.insertOne({
-      bookmarks: [...existingGames, ...newGames],
-      timestamp: new Date()
-    });
+    // Store unique games as separate documents
+    if (newGames.length > 0) {
+      await collection.insertMany(newGames);
+    }
     
     await client.close();
-    res.status(200).json(latestBookmarks);
+    res.status(200).json(newGames);
   } catch (error) {
     console.error('Error processing bookmarks:', error);
     res.status(500).json({ error: 'Failed to process bookmarks' });

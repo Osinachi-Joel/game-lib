@@ -19,6 +19,7 @@ export function GameLibrary() {
   const [scannedGames, setScannedGames] = useState<Game[]>([])
   const [searchQuery, setSearchQuery] = useState('')
   const [isLoading, setIsLoading] = useState(true)
+  const [isAddingGame, setIsAddingGame] = useState(false)
 
   useEffect(() => {
     const fetchGames = async () => {
@@ -45,7 +46,7 @@ export function GameLibrary() {
 
 
   const handleAddGame = async (newGame: Game) => {
-    setIsLoading(true)
+    setIsAddingGame(true)
     try {
       const gameWithId = {
         ...newGame,
@@ -59,31 +60,36 @@ export function GameLibrary() {
         body: JSON.stringify(gameWithId),
       })
 
+      if (response.status === 409) {
+        // Don't throw, just return a special value
+        return { error: 'DUPLICATE_GAME' }
+      }
       if (!response.ok) {
         throw new Error('Failed to add game')
       }
 
-      // Add the new game to the existing games array
       setScannedGames(prevGames => [...prevGames, gameWithId])
+      return { success: true }
     } catch (error) {
       console.error('Error adding game:', error)
+      throw error
     } finally {
-      setIsLoading(false)
+      setIsAddingGame(false)
     }
   }
 
   const handleScanComplete = async () => {
     try {
-      const response = await fetch('/api/get-bookmarks');
+      const response = await fetch('/api/get-games');
       if (!response.ok) {
-        console.error('Failed to fetch bookmarks');
+        console.error('Failed to fetch games');
         setScannedGames([]);
         return;
       }
       const games = await response.json();
       setScannedGames(games);
     } catch (error) {
-      console.error('Error fetching bookmarks:', error);
+      console.error('Error fetching games:', error);
       setScannedGames([]);
     }
   }
@@ -99,7 +105,7 @@ export function GameLibrary() {
             </div>
 
             <div className="flex gap-2 items-center">
-              <AddGame onAddGame={handleAddGame} />
+              <AddGame onAddGame={handleAddGame} isLoading={isAddingGame} />
               <ScanBookmarks onScanComplete={handleScanComplete} />
             </div>
           </div>
@@ -113,13 +119,7 @@ export function GameLibrary() {
               className="pl-10 w-1/6 bg-white/20 border-gray-800 text-white placeholder-gray-400 focus:ring-[#A4031F] focus:border-[#A4031F]"
             />
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-            {/* {games.filter(game =>
-              game.name.toLowerCase().includes(searchQuery.toLowerCase())
-            ).map((game) => (
-              <GameCard key={game.id} name={game.name} icon={game.icon} url={game.url} />
-            ))} */}
-          </div>
+
           <div className="mt-8">
             {isLoading ? (
               <div className="flex justify-center items-center min-h-[60vh]">

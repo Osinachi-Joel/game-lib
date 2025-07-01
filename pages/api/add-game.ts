@@ -18,29 +18,26 @@ export default async function handler(req: any, res: any) {
     // Connect to MongoDB
     await client.connect();
     const database = client.db('game-library');
-    const collection = database.collection('bookmarks');
-    
-    // Get the latest bookmarks document
-    const latestBookmarks = await collection.findOne(
-      {},
-      { sort: { timestamp: -1 } }
-    );
+    const collection = database.collection('games');
 
-    // Get existing games and add the new one
-    const existingGames = latestBookmarks?.bookmarks || [];
+    // Check for duplicate by URL
+    const existing = await collection.findOne({ url: game.url });
+    if (existing) {
+      await client.close();
+      return res.status(409).json({ error: 'DUPLICATE_GAME' });
+    }
+
+    // Create new game document
     const newGame = {
       id: game.id,
       name: game.name,
       url: game.url,
-      icon: game.icon
+      icon: game.icon,
+      createdAt: new Date()
     };
 
-    // Store updated games array
-    await collection.insertOne({
-      bookmarks: [...existingGames, newGame],
-      timestamp: new Date()
-    });
-    
+    // Store the game as a single document
+    await collection.insertOne(newGame);
     await client.close();
     res.status(200).json({ message: 'Game added successfully' });
   } catch (error) {

@@ -4,6 +4,7 @@ import { useState } from "react"
 import { Globe } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
+import { toast } from "sonner"
 import {
   Dialog,
   DialogContent,
@@ -32,12 +33,16 @@ export function ScanBookmarks({ onScanComplete }: ScanBookmarksProps) {
   const handleScan = async () => {
     setIsScanning(true)
     try {
-      await fetch('/api/scan-bookmarks')
+      const response = await fetch('/api/scan-bookmarks')
+      if (!response.ok) {
+        throw new Error('Failed to scan bookmarks')
+      }
       await onScanComplete()
       setOpen(false)
-      setIsScanning(false)
+      toast.success('Games scanned successfully!')
     } catch (error) {
       console.error('Failed to scan bookmarks:', error)
+      toast.error('Failed to scan bookmarks. Please try again.')
     } finally {
       setIsScanning(false)
     }
@@ -77,7 +82,6 @@ export function ScanBookmarks({ onScanComplete }: ScanBookmarksProps) {
             {isScanning ? (
               <>
                 <Spinner />
-                Scanning...
               </>
             ) : (
               'Start Scan'

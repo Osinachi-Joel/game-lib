@@ -15,30 +15,18 @@ export default async function handler(req: any, res: any) {
   try {
     await client.connect();
     const database = client.db('game-library');
-    const collection = database.collection('bookmarks');
+    const collection = database.collection('games');
 
-    const latestBookmarks = await collection.findOne(
-      {},
-      { sort: { timestamp: -1 } }
-    );
+    // Fetch all games and sort by name
+    const games = await collection.find({}).sort({ name: 1 }).toArray();
 
     await client.close();
 
-    if (!latestBookmarks) {
-      return res.status(404).json({ error: 'No bookmarks found' });
+    if (!games.length) {
+      return res.status(404).json({ error: 'No games found' });
     }
 
-    // Transform the bookmarks object into an array with IDs
-    const bookmarksObj = latestBookmarks?.bookmarks || {};
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
-    const bookmarksArray = Object.entries(bookmarksObj).map(([name, game]: [string, any]) => ({
-      id: Date.now() + '-' + Math.random().toString(36).substr(2, 5),
-      name: game.name,
-      url: game.url,
-      icon: game.icon
-    })).sort((a, b) => a.name.localeCompare(b.name));
-
-    res.status(200).json(bookmarksArray);
+    res.status(200).json(games);
 
   } catch (error) {
     console.error('Error fetching bookmarks:', error);
