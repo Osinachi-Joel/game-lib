@@ -137,7 +137,7 @@ export function GameLibrary() {
                 {scannedGames.filter(game =>
                   game.name.toLowerCase().includes(searchQuery.toLowerCase())
                 ).map((game) => (
-                  <GameCard key={game.id} name={game.name} icon={game.icon} url={game.url} />
+                  <GameCard key={game.id} id={parseInt(game.id)} name={game.name} icon={game.icon} url={game.url} />
                 ))}
               </div>
             )}
