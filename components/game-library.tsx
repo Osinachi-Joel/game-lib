@@ -95,6 +95,14 @@ export function GameLibrary() {
     }
   }
 
+  const handleDeleteGame = (_id?: string, id?: number) => {
+    setScannedGames(prevGames => prevGames.filter(game => {
+      if (_id && game._id) return game._id !== _id;
+      if (id) return parseInt(game.id) !== id;
+      return true;
+    }));
+  };
+
   return (
     <div className="flex-1 bg-gray-900 overflow-auto">
       <main className="p-6">
@@ -138,7 +146,15 @@ export function GameLibrary() {
                 {scannedGames.filter(game =>
                   game.name.toLowerCase().includes(searchQuery.toLowerCase())
                 ).map((game) => (
-                  <GameCard key={game.id} _id={game._id} id={parseInt(game.id)} name={game.name} icon={game.icon} url={game.url} />
+                  <GameCard
+                    key={game.id}
+                    _id={game._id}
+                    id={parseInt(game.id)}
+                    name={game.name}
+                    icon={game.icon}
+                    url={game.url}
+                    onDelete={(_id?: string, id?: number) => handleDeleteGame(_id, id)}
+                  />
                 ))}
               </div>
             )}
