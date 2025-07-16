@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+ 
 import { MongoClient, ObjectId } from 'mongodb';
 
 if (!process.env.MONGODB_URI) {
@@ -9,13 +9,13 @@ if (!process.env.MONGODB_URI) {
 const client = new MongoClient(process.env.MONGODB_URI);
 
 export default async function handler(req: any, res: any) {
-  if (req.method !== 'PUT') {
+  if (req.method !== 'PATCH') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
   try {
-    const { id, name, url } = req.body;
-    if (!id || (!name && !url)) {
+    const { _id, id, name, url } = req.body;
+    if ((!_id && !id) || (!name && !url)) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
@@ -27,8 +27,15 @@ export default async function handler(req: any, res: any) {
     if (name) updateFields.name = name;
     if (url) updateFields.url = url;
 
+    let query;
+    if (_id) {
+      query = { _id: new ObjectId(_id) };
+    } else {
+      query = { id: id };
+    }
+
     const result = await collection.updateOne(
-      { id: id },
+      query,
       { $set: updateFields }
     );
     await client.close();

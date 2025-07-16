@@ -2,15 +2,19 @@ import { useState } from "react"
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from "@/components/ui/dialog"
 import { SquarePen } from "lucide-react"
 import { toast } from "sonner"
+import { Button } from "../ui/button"
+import { Spinner } from "../ui/spinner"
+import { Input } from "../ui/input"
 
 interface EditGameDialogProps {
-  id: number
-  name: string
-  url: string
-  onUpdated?: (newName: string, newUrl: string) => void
+  _id?: string;
+  id: number;
+  name: string;
+  url: string;
+  onUpdated?: (newName: string, newUrl: string) => void;
 }
 
-export function EditGameDialog({ id, name, url, onUpdated }: EditGameDialogProps) {
+export function EditGameDialog({ _id, id, name, url, onUpdated }: EditGameDialogProps) {
   const [open, setOpen] = useState(false)
   const [gameName, setGameName] = useState(name)
   const [gameUrl, setGameUrl] = useState(url)
@@ -22,11 +26,11 @@ export function EditGameDialog({ id, name, url, onUpdated }: EditGameDialogProps
     setError("")
     try {
       const response = await fetch("/api/update-game", {
-        method: "PUT",
+        method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ id, name: gameName, url: gameUrl }),
+        body: JSON.stringify(_id ? { _id, name: gameName, url: gameUrl } : { id, name: gameName, url: gameUrl }),
       })
       if (!response.ok) {
         throw new Error("Failed to update game")
@@ -52,11 +56,10 @@ export function EditGameDialog({ id, name, url, onUpdated }: EditGameDialogProps
         <DialogHeader>
           <DialogTitle>Edit Game</DialogTitle>
         </DialogHeader>
-        <form onSubmit={e => { e.preventDefault(); handleSave(); }} className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4">
           <label className="flex flex-col gap-1">
             <span>Game Name</span>
-            <input
-              className="border rounded px-2 py-1"
+            <Input
               value={gameName}
               onChange={e => setGameName(e.target.value)}
               required
@@ -64,21 +67,22 @@ export function EditGameDialog({ id, name, url, onUpdated }: EditGameDialogProps
           </label>
           <label className="flex flex-col gap-1">
             <span>Game URL</span>
-            <input
-              className="border rounded px-2 py-1"
+            <Input
               value={gameUrl}
               onChange={e => setGameUrl(e.target.value)}
               required
             />
           </label>
           <DialogFooter>
-            <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700" disabled={loading}>{loading ? "Saving..." : "Save"}</button>
+            <Button onClick={handleSave} disabled={loading} className="cursor-pointer bg-blue-300 text-black hover:text-shadow-amber-50 hover:bg-[#E4E4E4]">
+              {loading ? <Spinner/> : "Save"}
+            </Button>
             <DialogClose asChild>
-              <button type="button" className="px-4 py-2 rounded border">Cancel</button>
+              <Button variant="outline" className="cursor-pointer">Cancel</Button>
             </DialogClose>
           </DialogFooter>
           {error && <div className="text-red-600 mt-2">{error}</div>}
-        </form>
+        </div>
       </DialogContent>
     </Dialog>
   )

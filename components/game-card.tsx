@@ -8,10 +8,11 @@ import { EditGameDialog } from "@/components/utility/edit-game"
 import { DeleteGameDialog } from "@/components/utility/delete-game"
 
 interface GameCardProps {
-  id: number
-  name: string
-  icon?: string
-  url: string
+  _id?: string;
+  id: number;
+  name: string;
+  icon?: string;
+  url: string;
 }
 
 interface GameData {
@@ -33,7 +34,7 @@ function SkeletonCard() {
   )
 }
 
-export function GameCard({ id, name, icon = "/placeholder.svg?height=64&width=64", url }: GameCardProps) {
+export function GameCard({ _id, id, name, icon = "/placeholder.svg?height=64&width=64", url }: GameCardProps) {
   const [gameData, setGameData] = useState<GameData | null>(null)
   const [displayName, setDisplayName] = useState(name)
   const [displayUrl, setDisplayUrl] = useState(url)
@@ -121,7 +122,7 @@ export function GameCard({ id, name, icon = "/placeholder.svg?height=64&width=64
                       </div>
                     )}
                     <div className="ml-auto flex items-center gap-2" onClick={handleActionClick}>
-                      <EditGameDialog id={id} name={displayName} url={displayUrl} onUpdated={(newName, newUrl) => { setDisplayName(newName); setDisplayUrl(newUrl); }} />
+                      <EditGameDialog _id={_id} id={id} name={displayName} url={displayUrl} onUpdated={(newName, newUrl) => { setDisplayName(newName); setDisplayUrl(newUrl); }} />
                       <DeleteGameDialog onDelete={() => { /* TODO: handle delete */ }} />
                     </div>
                   </div>

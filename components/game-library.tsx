@@ -9,10 +9,11 @@ import { ScanBookmarks } from "./utility/scan-bookmarks"
 import { Spinner } from "./ui/spinner"
 
 interface Game {
-  id: string
-  name: string
-  icon: string
-  url: string
+  _id?: string;
+  id: string;
+  name: string;
+  icon: string;
+  url: string;
 }
 
 export function GameLibrary() {
@@ -137,7 +138,7 @@ export function GameLibrary() {
                 {scannedGames.filter(game =>
                   game.name.toLowerCase().includes(searchQuery.toLowerCase())
                 ).map((game) => (
-                  <GameCard key={game.id} id={parseInt(game.id)} name={game.name} icon={game.icon} url={game.url} />
+                  <GameCard key={game.id} _id={game._id} id={parseInt(game.id)} name={game.name} icon={game.icon} url={game.url} />
                 ))}
               </div>
             )}
