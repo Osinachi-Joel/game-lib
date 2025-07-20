@@ -5,7 +5,14 @@ if (!process.env.MONGODB_URI) {
   throw new Error('Please add your MONGODB_URI to .env.local');
 }
 
-const client = new MongoClient(process.env.MONGODB_URI);
+const mongoOptions = {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  tls: true,
+  tlsAllowInvalidCertificates: process.env.NODE_ENV !== 'production',
+};
+
+const client = new MongoClient(process.env.MONGODB_URI, mongoOptions);
 
 export default async function handler(req: any, res: any) {
   if (req.method !== 'DELETE') {
@@ -37,8 +44,9 @@ export default async function handler(req: any, res: any) {
     }
 
     res.status(200).json({ message: 'Game deleted successfully' });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error deleting game:', error);
-    res.status(500).json({ error: 'Failed to delete game' });
+    try { await client.close(); } catch {}
+    res.status(500).json({ error: 'Failed to delete game', details: error.message });
   }
 } 

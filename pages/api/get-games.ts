@@ -1,12 +1,19 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { MongoClient } from 'mongodb';
 
 if (!process.env.MONGODB_URI) {
   throw new Error('Please add your MONGODB_URI to .env.local');
 }
 
-const client = new MongoClient(process.env.MONGODB_URI);
+const mongoOptions = {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  tls: true,
+  tlsAllowInvalidCertificates: process.env.NODE_ENV !== 'production',
+};
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const client = new MongoClient(process.env.MONGODB_URI, mongoOptions);
+
 export default async function handler(req: any, res: any) {
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -28,8 +35,9 @@ export default async function handler(req: any, res: any) {
 
     res.status(200).json(games);
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching bookmarks:', error);
-    res.status(500).json({ error: 'Failed to fetch bookmarks' });
+    try { await client.close(); } catch {}
+    res.status(500).json({ error: 'Failed to fetch bookmarks', details: error.message });
   }
 }

@@ -1,9 +1,12 @@
-const fs = require('fs').promises;
-const path = require('path');
-const os = require('os');
-const { promisify } = require('util');
-const sqlite3 = require('sqlite3');
-const plist = (process.platform === 'darwin') ? require('plist') : null;
+import fs from 'fs/promises';
+import path from 'path';
+import os from 'os';
+import { promisify } from 'util';
+import sqlite3 from 'sqlite3';
+let plist = null;
+if (process.platform === 'darwin') {
+  plist = await import('plist').then(mod => mod.default || mod);
+}
 
 const allBookmarks = [];
 
@@ -156,7 +159,7 @@ function recursePlist(nodes, acc, inGamesFolder = false) {
   }
 }
 
-(async function main() {
+export async function scanBookmarks() {
   console.log('\n=== Bookmark Scanner Start ===');
   const bp = getBrowserPaths();
   const browsers = Object.entries(bp);
@@ -179,7 +182,7 @@ function recursePlist(nodes, acc, inGamesFolder = false) {
     }
   }
 
-  const outDir = path.join(__dirname, 'booked-results');
+  const outDir = path.join(path.dirname(new URL(import.meta.url).pathname), 'booked-results');
   if (!await exists(outDir)) {
     await fs.mkdir(outDir);
     console.log(`\nCreated results directory: ${outDir}`);
@@ -200,4 +203,9 @@ function recursePlist(nodes, acc, inGamesFolder = false) {
   }
 
   console.log('\n=== Done ===\n');
-})();
+}
+
+// CLI entry point
+if (process.argv[1] === new URL(import.meta.url).pathname) {
+  scanBookmarks();
+}
