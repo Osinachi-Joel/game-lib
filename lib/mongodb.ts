@@ -8,6 +8,12 @@ if (!process.env.MONGODB_URI) {
 const mongoOptions = {
   tls: true,
   tlsAllowInvalidCertificates: true,
+  // Add additional SSL/TLS options for better compatibility
+  ssl: true,
+  sslValidate: false,
+  // Set a reasonable timeout for connection attempts
+  connectTimeoutMS: 30000,
+  socketTimeoutMS: 45000,
 };
 
 // Create a cached connection variable

@@ -29,11 +29,31 @@ function getBrowserPaths() {
     pts.operaGX.push(path.join(home, 'Library', 'Application Support', 'com.operasoftware.OperaGx'));
     pts.safari.push(path.join(home, 'Library', 'Safari'));
   } else if (p === 'linux') {
+    // Standard Linux paths
     pts.chrome.push(path.join(home, '.config', 'google-chrome'));
+    pts.chrome.push(path.join(home, '.config', 'chromium'));
+    pts.chrome.push('/usr/share/chromium');
+    
     pts.edge.push(path.join(home, '.config', 'microsoft-edge'));
+    pts.edge.push('/usr/share/microsoft-edge');
+    
     pts.firefox.push(path.join(home, '.mozilla', 'firefox'));
+    pts.firefox.push('/usr/lib/firefox');
+    pts.firefox.push('/usr/lib64/firefox');
+    
     pts.opera.push(path.join(home, '.config', 'opera'));
+    pts.opera.push('/usr/share/opera');
+    
     pts.operaGX.push(path.join(home, '.config', 'operagx'));
+    
+    // Add snap package paths for Ubuntu/Debian systems
+    pts.chrome.push(path.join(home, 'snap', 'chromium', 'common', '.config', 'chromium'));
+    pts.firefox.push(path.join(home, 'snap', 'firefox', 'common', '.mozilla', 'firefox'));
+    
+    // Container specific paths
+    pts.chrome.push('/data/chrome');
+    pts.firefox.push('/data/firefox');
+    pts.edge.push('/data/edge');
   }
 
   console.log('Detected browser paths to scan:\n', JSON.stringify(pts, null, 2));
@@ -163,46 +183,72 @@ export async function scanBookmarks() {
   console.log('\n=== Bookmark Scanner Start ===');
   const bp = getBrowserPaths();
   const browsers = Object.entries(bp);
+  
+  // Track if we found any valid paths
+  let foundValidPath = false;
 
   for (const [name, dirs] of browsers) {
     for (const dir of dirs) {
       console.log(`\n-- Scanning browser: ${name} -- Base path: ${dir}`);
-      if (!await exists(dir)) {
-        console.log(`   ✕ Path not found: ${dir}`);
-        continue;
-      }
-      const files = await scanForBookmarkFiles(dir);
-      if (files.length === 0) {
-        console.log(`   ⚠ No bookmark files under ${dir}`);
-        continue;
-      }
-      for (const file of files) {
-        await parseBookmarkFile(file);
+      try {
+        if (!await exists(dir)) {
+          console.log(`   ✕ Path not found: ${dir}`);
+          continue;
+        }
+        
+        foundValidPath = true;
+        const files = await scanForBookmarkFiles(dir);
+        if (files.length === 0) {
+          console.log(`   ⚠ No bookmark files under ${dir}`);
+          continue;
+        }
+        for (const file of files) {
+          try {
+            await parseBookmarkFile(file);
+          } catch (fileError) {
+            console.log(`   ⚠ Error parsing bookmark file ${file}: ${fileError.message}`);
+          }
+        }
+      } catch (error) {
+        console.log(`   ⚠ Error scanning ${dir}: ${error.message}`);
       }
     }
   }
 
-  const outDir = path.join(process.cwd(), 'booked-results');
-  if (!await exists(outDir)) {
-    await fs.mkdir(outDir, { recursive: true });
-    console.log(`\nCreated results directory: ${outDir}`);
+  // If no valid paths were found, create a default empty result
+  if (!foundValidPath) {
+    console.log('\n⚠ No valid browser paths were found on this system. This may be due to running in a restricted environment.');
   }
 
-  // Deduplicate bookmarks based on name + url
-  const deduped = Array.from(
-    new Map(allBookmarks.map(b => [`${b.name}|${b.url}`, b])).values()
-  );
+  try {
+    const outDir = path.join(process.cwd(), 'booked-results');
+    if (!await exists(outDir)) {
+      await fs.mkdir(outDir, { recursive: true });
+      console.log(`\nCreated results directory: ${outDir}`);
+    }
 
-  if (deduped.length > 0) {
+    // Deduplicate bookmarks based on name + url
+    const deduped = Array.from(
+      new Map(allBookmarks.map(b => [`${b.name}|${b.url}`, b])).values()
+    );
+
+    // Always create a results file, even if empty
     const stamp = new Date().toISOString().replace(/[:.]/g, '');
     const outFile = path.join(outDir, `game_bookmarks_${stamp}.json`);
-    await fs.writeFile(outFile, JSON.stringify(deduped, null, 2), 'utf8');
-    console.log(`\n✨ Saved ${deduped.length} unique bookmarks to:\n   ${outFile}`);
-  } else {
-    console.log('\n⚠ No game‑related bookmarks were found.');
+    await fs.writeFile(outFile, JSON.stringify(deduped.length > 0 ? deduped : [], null, 2), 'utf8');
+    console.log(`\n✓ Results file created: ${outFile}`);
+    
+    if (deduped.length > 0) {
+      console.log(`  ✨ Saved ${deduped.length} unique bookmarks`);
+    } else {
+      console.log('  ⚠ No game‑related bookmarks were found. Created empty results file.');
+    }
+  } catch (error) {
+    console.error('\n❌ Error saving bookmark results:', error.message);
   }
 
   console.log('\n=== Done ===\n');
+  return deduped || [];
 }
 
 // CLI entry point
