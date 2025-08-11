@@ -182,9 +182,9 @@ export async function scanBookmarks() {
     }
   }
 
-  const outDir = path.join(path.dirname(new URL(import.meta.url).pathname), 'booked-results');
+  const outDir = path.join(process.cwd(), 'booked-results');
   if (!await exists(outDir)) {
-    await fs.mkdir(outDir);
+    await fs.mkdir(outDir, { recursive: true });
     console.log(`\nCreated results directory: ${outDir}`);
   }
 

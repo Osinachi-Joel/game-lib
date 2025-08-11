@@ -1,34 +1,24 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
  
-import { MongoClient, ObjectId } from 'mongodb';
+import { NextApiRequest, NextApiResponse } from 'next';
+import { ObjectId } from 'mongodb';
+import { connectToDatabase } from '../../lib/mongodb';
+import { handleApiError, ErrorType, validateMethod } from '../../lib/api-utils';
 
-if (!process.env.MONGODB_URI) {
-  throw new Error('Please add your MONGODB_URI to .env.local');
-}
-
-const mongoOptions = {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-  tls: true,
-  tlsAllowInvalidCertificates: process.env.NODE_ENV !== 'production',
-};
-
-const client = new MongoClient(process.env.MONGODB_URI, mongoOptions);
-
-export default async function handler(req: any, res: any) {
-  if (req.method !== 'PATCH') {
-    return res.status(405).json({ error: 'Method not allowed' });
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  // Validate HTTP method
+  if (!await validateMethod(req, res, ['PATCH'])) {
+    return;
   }
 
   try {
     const { _id, id, name, url } = req.body;
     if ((!_id && !id) || (!name && !url)) {
-      return res.status(400).json({ error: 'Missing required fields' });
+      return await handleApiError(res, ErrorType.VALIDATION, 'Missing required fields', 'Either _id or id must be provided, and at least one of name or url');
     }
 
-    await client.connect();
-    const database = client.db('game-library');
-    const collection = database.collection('games');
+    const { db } = await connectToDatabase();
+    const collection = db.collection('games');
 
     const updateFields: any = {};
     if (name) updateFields.name = name;
@@ -45,16 +35,19 @@ export default async function handler(req: any, res: any) {
       query,
       { $set: updateFields }
     );
-    await client.close();
 
     if (result.matchedCount === 0) {
-      return res.status(404).json({ error: 'Game not found' });
+      return await handleApiError(res, ErrorType.NOT_FOUND, 'Game not found');
     }
 
     res.status(200).json({ message: 'Game updated successfully' });
   } catch (error: any) {
-    console.error('Error updating game:', error);
-    try { await client.close(); } catch {}
-    res.status(500).json({ error: 'Failed to update game', details: error.message });
+    await handleApiError(
+      res,
+      ErrorType.SERVER_ERROR,
+      'Failed to update game',
+      error.message,
+      error
+    );
   }
 }
