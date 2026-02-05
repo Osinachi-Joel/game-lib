@@ -10,6 +10,48 @@ if (process.platform === 'darwin') {
 
 const allBookmarks = [];
 
+function cleanGameTitle(title) {
+  if (!title) return title;
+  
+  let cleaned = title;
+
+  // 1. Remove common prefixes
+  cleaned = cleaned.replace(/^Download\s+/i, ''); // "Download "
+  cleaned = cleaned.replace(/^\d+[-–]\s*/, '');  // "966- "
+  
+  // 2. Remove common suffixes (Site names, Repackers)
+  const suffixes = [
+    ' - FitGirl Repacks',
+    ' - DODI Repacks',
+    ' | Game3rb',
+    ' - Google Search',
+    ' - DenuvoGames.Store',
+    ' | Knowledgebase Article - Nodecraft',
+    ' - Free Download PC Games With High Speed Link'
+  ];
+  
+  for (const suffix of suffixes) {
+    const idx = cleaned.toLowerCase().lastIndexOf(suffix.toLowerCase());
+    if (idx !== -1) {
+      cleaned = cleaned.substring(0, idx);
+    }
+  }
+
+  // 3. Remove Version/Build info
+  // Matches: " - v1", " v1.0", ", v1.0", " Build 123", " (v1.0...)", "v558123"
+  // Expanded to be more aggressive with version patterns
+  const versionRegex = /([,(-]\s+)?(v\d+|Build\s+\d+|Update\s+\d+).*$/i;
+  cleaned = cleaned.replace(versionRegex, '');
+
+  // 4. Cleanup trailing separators/brackets
+  // Removes trailing dashes, commas, open brackets, or spaces
+  cleaned = cleaned.replace(/[-–,(\s]+$/, '');
+  cleaned = cleaned.replace(/\s+\[.*?\]$/, ''); // Trailing [Monkey Repack] etc
+  cleaned = cleaned.replace(/\s+\(.*?\)$/, ''); // Trailing (Steam) etc if it was left over
+  
+  return cleaned.trim();
+}
+
 function getBrowserPaths() {
   const home = os.homedir();
   const p = process.platform;
@@ -123,7 +165,7 @@ async function parseBookmarkFile(filePath) {
         JOIN moz_places p ON b.fk = p.id
         WHERE LOWER(b.title) LIKE '%game%' OR LOWER(b.title) LIKE '%games%'
       `);
-      rows.forEach(r => items.push({ id: uniqueId(), name: r.title, url: r.url, icon: null }));
+      rows.forEach(r => items.push({ id: uniqueId(), name: cleanGameTitle(r.title), url: r.url, icon: null }));
       db.close();
       await fs.unlink(tmp).catch(() => {});
     } else if (ext === '.plist' && plist) {
@@ -151,7 +193,7 @@ function extractChromium(node, acc, inGamesFolder = false) {
     }
 
     if (inGamesFolder && node.type === 'url') {
-      acc.push({ id: uniqueId(), name: node.name, url: node.url, icon: null });
+      acc.push({ id: uniqueId(), name: cleanGameTitle(node.name), url: node.url, icon: null });
     }
 
     if (node.children) {
@@ -170,7 +212,12 @@ function recursePlist(nodes, acc, inGamesFolder = false) {
     const nowInGamesFolder = inGamesFolder || isGamesFolder;
 
     if (nowInGamesFolder && node.WWWebBookmarkType === 'WebBookmarkTypeLeaf') {
-      acc.push({ id: uniqueId(), name: node.URIDictionary?.title, url: node.URLString, icon: null });
+      acc.push({ 
+        id: uniqueId(), 
+        name: cleanGameTitle(node.URIDictionary?.title), 
+        url: node.URLString, 
+        icon: null 
+      });
     }
 
     if (Array.isArray(node.Children)) {

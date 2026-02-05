@@ -1,40 +1,49 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/pages/api-reference/create-next-app).
+# Game Library Manager & Bookmark Scanner
 
-## Getting Started
+A local web application to scan your browser bookmarks for games, organize them, and manage your collection with a beautiful UI.
 
-First, run the development server:
+## Features
+- **Auto-Scan**: Automatically scans Chrome, Edge, Firefox, and Opera bookmarks for game-related entries.
+- **Clean Titles**: Intelligent cleaning of game titles (removes "Download", version numbers, repack suffixes).
+- **Library Management**: Add, edit, and delete games manually.
+- **Local First**: Your data stays on your machine (MongoDB).
 
+## Prerequisites
+1. **Node.js**: [Download and Install Node.js](https://nodejs.org/) (v18 or higher recommended).
+2. **MongoDB**: You need a running MongoDB instance.
+   - [Download MongoDB Community Server](https://www.mongodb.com/try/download/community) and run it locally.
+   - OR use a free cloud instance from [MongoDB Atlas](https://www.mongodb.com/atlas).
+
+## Installation
+
+1.  **Clone/Download** this repository.
+2.  Open a terminal in the project folder.
+3.  Install dependencies:
+    ```bash
+    npm install
+    ```
+4.  **Configure Environment**:
+    - Copy `.env.example` to `.env`.
+    - Edit `.env` and set your `MONGODB_URI`.
+    - Example for local DB: `mongodb://localhost:27017/game-lib`
+
+## Running the App
+
+### Windows
+Double-click `start-app.bat` to launch the application.
+
+### Manual Start
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+## Usage
+1.  **Scan**: Click the "Scan" button. Ensure your games are in a bookmark folder named **"Games"**.
+2.  **Manage**: Edit titles or delete entries.
+3.  **Clean**: Use "Delete History" to wipe scanned files or reset the database.
 
-[API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
-
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) instead of React pages.
-
-This project uses [`next/font`](https://nextjs.org/docs/pages/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn-pages-router) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/pages/building-your-application/deploying) for more details.
+## Troubleshooting
+- **No Bookmarks Found?** Make sure your bookmarks are in a top-level folder named "Games".
+- **Database Error?** Check if MongoDB is running and the connection string in `.env` is correct.

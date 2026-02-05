@@ -38,9 +38,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     try {
       data = await fs.readFile(filePath, 'utf8');
       bookmarks = JSON.parse(data);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error reading bookmark file:', error);
-      return await handleApiError(res, ErrorType.SERVER_ERROR, 'Failed to read bookmark file');
+      return await handleApiError(res, ErrorType.SERVER_ERROR, 'Failed to read bookmark file', error.message, error);
     }
 
     // If there are no bookmarks, return empty array without connecting to MongoDB
