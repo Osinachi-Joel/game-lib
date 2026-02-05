@@ -2,12 +2,13 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { promises as fs } from 'fs';
 import path from 'path';
-import { connectToDatabase } from '../../lib/mongodb';
+import connectToDatabase from '../../lib/db';
+import Game from '../../models/Game';
 import { scanBookmarks } from '../../bookmarkScanner.js';
 import { handleApiError, ErrorType } from '../../lib/api-utils';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  
+
   try {
     // Run the bookmark scanner directly - this will create a results file even if no bookmarks are found
     await scanBookmarks();
@@ -21,7 +22,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       console.error('Error reading results directory:', error);
       return await handleApiError(res, ErrorType.SERVER_ERROR, 'Failed to read bookmark results directory');
     }
-    
+
     const latestFile = files
       .filter((file: string) => file.startsWith('game_bookmarks_'))
       .sort()
@@ -47,16 +48,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       console.log('No bookmarks to process, skipping MongoDB connection');
       return res.status(200).json([]);
     }
-    
+
     // Connect to MongoDB and store the data
-    let db;
     try {
-      const dbConnection = await connectToDatabase();
-      db = dbConnection.db;
-      const collection = db.collection('games');
+      await connectToDatabase();
 
       // Get existing game URLs to check for duplicates
-      const existingGames = await collection.find({}, { projection: { url: 1 } }).toArray();
+      const existingGames = await Game.find({}, 'url').lean();
       const existingUrls = new Set(existingGames.map((game: any) => game.url));
 
       // Filter out duplicates and create new game documents
@@ -66,18 +64,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           id: Date.now() + '-' + Math.random().toString(36).substr(2, 5),
           name: game.name || 'Unknown Game',
           url: game.url,
-          icon: game.icon,
-          createdAt: new Date()
+          icon: game.icon
         }));
 
       // Store unique games as separate documents
       if (newGames.length > 0) {
-        await collection.insertMany(newGames);
+        await Game.insertMany(newGames);
         console.log(`Added ${newGames.length} new games to database`);
       } else {
         console.log('No new games to add to database');
       }
-      
+
       return res.status(200).json(newGames);
     } catch (dbError: any) {
       console.error('MongoDB operation error:', dbError);

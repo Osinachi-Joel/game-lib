@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextApiRequest, NextApiResponse } from 'next';
-import { connectToDatabase } from '../../lib/mongodb';
+import connectToDatabase from '../../lib/db';
+import Game from '../../models/Game';
 import { handleApiError, ErrorType, validateMethod } from '../../lib/api-utils';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -10,11 +11,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const { db } = await connectToDatabase();
-    const collection = db.collection('games');
+    await connectToDatabase();
 
     // Fetch all games and sort by name
-    const games = await collection.find({}).sort({ name: 1 }).toArray();
+    const games = await Game.find({}).sort({ name: 1 }).lean();
 
     if (!games.length) {
       return await handleApiError(res, ErrorType.NOT_FOUND, 'No games found');
@@ -24,10 +24,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   } catch (error: any) {
     await handleApiError(
-      res, 
-      ErrorType.SERVER_ERROR, 
-      'Failed to fetch games', 
-      error.message, 
+      res,
+      ErrorType.SERVER_ERROR,
+      'Failed to fetch games',
+      error.message,
       error
     );
   }

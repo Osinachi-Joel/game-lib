@@ -1,5 +1,5 @@
 import { NextApiResponse } from 'next';
-import { closeConnection } from './mongodb';
+// import { closeConnection } from './mongodb';
 
 /**
  * Standard error types for API responses
@@ -45,7 +45,7 @@ export async function handleApiError(
   }
 
   // Close MongoDB connection if there was an error
-  await closeConnection();
+  // await closeConnection(); // Not needed with Mongoose caching
 
   // Determine status code based on error type
   let statusCode: number;

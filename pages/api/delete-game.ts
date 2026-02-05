@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextApiRequest, NextApiResponse } from 'next';
-import { ObjectId } from 'mongodb';
-import { connectToDatabase } from '../../lib/mongodb';
+import connectToDatabase from '../../lib/db';
+import Game from '../../models/Game';
 import { handleApiError, ErrorType, validateMethod } from '../../lib/api-utils';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -16,19 +16,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return await handleApiError(res, ErrorType.VALIDATION, 'Missing required fields', 'Either _id or id must be provided');
     }
 
-    const { db } = await connectToDatabase();
-    const collection = db.collection('games');
+    await connectToDatabase();
 
     let query;
     if (_id) {
-      query = { _id: new ObjectId(_id) };
+      query = { _id };
     } else {
-      query = { id: id };
+      query = { id };
     }
 
-    const result = await collection.deleteOne(query);
+    const result = await Game.findOneAndDelete(query);
 
-    if (result.deletedCount === 0) {
+    if (!result) {
       return await handleApiError(res, ErrorType.NOT_FOUND, 'Game not found');
     }
 

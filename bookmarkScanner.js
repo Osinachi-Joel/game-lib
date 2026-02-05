@@ -220,6 +220,7 @@ export async function scanBookmarks() {
     console.log('\n⚠ No valid browser paths were found on this system. This may be due to running in a restricted environment.');
   }
 
+  let deduped = [];
   try {
     const outDir = path.join(process.cwd(), 'booked-results');
     if (!await exists(outDir)) {
@@ -228,7 +229,7 @@ export async function scanBookmarks() {
     }
 
     // Deduplicate bookmarks based on name + url
-    const deduped = Array.from(
+    deduped = Array.from(
       new Map(allBookmarks.map(b => [`${b.name}|${b.url}`, b])).values()
     );
 
@@ -248,7 +249,7 @@ export async function scanBookmarks() {
   }
 
   console.log('\n=== Done ===\n');
-  return deduped || [];
+  return deduped;
 }
 
 // CLI entry point
