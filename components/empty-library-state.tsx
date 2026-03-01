@@ -6,8 +6,15 @@ import { GhostIcon } from "./ui/ghost-icon"
 import { AddGame } from "./utility/add-game"
 import { ScanBookmarks } from "./utility/scan-bookmarks"
 
+interface Game {
+  id: string
+  name: string
+  icon: string
+  url: string
+}
+
 interface EmptyLibraryStateProps {
-  onAddGame: (game: any) => Promise<any>
+  onAddGame: (game: Game) => Promise<{ success?: boolean; error?: string }>
   onScanComplete: () => void
   isAddingGame: boolean
 }
@@ -45,7 +52,7 @@ export function EmptyLibraryState({ onAddGame, onScanComplete, isAddingGame }: E
         </h2>
         
         <p className="text-zinc-400 text-lg mb-10 max-w-md mx-auto leading-relaxed">
-          It looks like you haven't added any adventures yet. Please add games manually or scan your bookmarks to get started.
+          It looks like you haven&apos;t added any adventures yet. Please add games manually or scan your bookmarks to get started.
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">

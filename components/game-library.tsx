@@ -189,7 +189,7 @@ export function GameLibrary() {
                 className="flex justify-center items-center min-h-[40vh]"
               >
                 <div className="text-center text-zinc-400">
-                  <p className="text-lg">No matches found for "{searchQuery}".</p>
+                  <p className="text-lg">No matches found for &quot;{searchQuery}&quot;.</p>
                 </div>
               </motion.div>
             ) : (

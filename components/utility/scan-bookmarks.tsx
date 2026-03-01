@@ -5,7 +5,7 @@ import { Globe, Trash2, FolderPlus, MousePointerClick, Radar, Rocket } from "luc
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import { toast } from "sonner"
-import { motion, AnimatePresence } from "framer-motion"
+import { motion, Variants } from "framer-motion"
 import {
   Dialog,
   DialogContent,
@@ -20,7 +20,7 @@ interface ScanBookmarksProps {
   trigger?: React.ReactNode
 }
 
-const spanVariants = {
+const spanVariants: Variants = {
   initial: { width: 0, opacity: 0, marginLeft: 0 },
   hover: { 
     width: "auto", 
@@ -36,9 +36,6 @@ export function ScanBookmarks({ onScanComplete, trigger }: ScanBookmarksProps) {
   const [isDeleting, setIsDeleting] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [deleteFromDb, setDeleteFromDb] = useState(false)
-  
-  const [isScanHovered, setIsScanHovered] = useState(false)
-  const [isDeleteHovered, setIsDeleteHovered] = useState(false)
 
   const handleScan = async () => {
     setIsScanning(true)
@@ -119,8 +116,6 @@ export function ScanBookmarks({ onScanComplete, trigger }: ScanBookmarksProps) {
         <DialogTrigger asChild>
           {trigger || (
             <motion.button
-              onMouseEnter={() => setIsScanHovered(true)}
-              onMouseLeave={() => setIsScanHovered(false)}
               className="flex items-center justify-center bg-[#10b981] text-white rounded-md h-12 min-w-[48px] px-3.5 transition-colors hover:bg-[#10b981]/90 shadow-lg shadow-[#10b981]/20 outline-none overflow-hidden"
               whileHover="hover"
               initial="initial"
@@ -183,7 +178,7 @@ export function ScanBookmarks({ onScanComplete, trigger }: ScanBookmarksProps) {
             >
               {isScanning ? <Spinner /> : (
                 <>
-                  Start Scan
+                  <span>Start Scan</span>
                   <Rocket className="h-4 w-4" />
                 </>
               )}
@@ -196,8 +191,6 @@ export function ScanBookmarks({ onScanComplete, trigger }: ScanBookmarksProps) {
         <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
           <DialogTrigger asChild>
             <motion.button
-              onMouseEnter={() => setIsDeleteHovered(true)}
-              onMouseLeave={() => setIsDeleteHovered(false)}
               className="flex items-center justify-center bg-red-600 text-white rounded-md h-12 min-w-[48px] px-3.5 transition-colors hover:bg-red-700 shadow-lg shadow-red-600/20 outline-none overflow-hidden"
               whileHover="hover"
               initial="initial"
@@ -226,7 +219,7 @@ export function ScanBookmarks({ onScanComplete, trigger }: ScanBookmarksProps) {
                 id="deleteFromDb"
                 checked={deleteFromDb}
                 onChange={(e) => setDeleteFromDb(e.target.checked)}
-                className="h-4 w-4 rounded border-slate-700 bg-slate-800 text-red-600 focus:ring-red-500 focus:ring-offset-slate-900"
+                className="h-4 w-4 rounded border-slate-700 bg-zinc-800 text-red-600 focus:ring-red-500 focus:ring-offset-slate-900"
               />
               <label
                 htmlFor="deleteFromDb"

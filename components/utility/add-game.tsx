@@ -7,14 +7,12 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
 import { toast } from "sonner"
-import { motion, AnimatePresence, Variants } from "framer-motion"
+import { motion, Variants } from "framer-motion"
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
   DialogTitle,
   DialogTrigger,
-  DialogFooter,
 } from "@/components/ui/dialog"
 
 // Game interface with improved type for icon (can be null)
@@ -50,7 +48,6 @@ export function AddGame({ onAddGame, isLoading, trigger }: AddGameProps) {
   const [gameName, setGameName] = useState("")
   const [gameUrl, setGameUrl] = useState("")
   const [errors, setErrors] = useState<{ name?: string; url?: string }>({})
-  const [isHovered, setIsHovered] = useState(false)
 
   // Validate form fields
   const validate = () => {
@@ -94,8 +91,6 @@ export function AddGame({ onAddGame, isLoading, trigger }: AddGameProps) {
       <DialogTrigger asChild>
         {trigger || (
           <motion.button
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
             className="flex items-center justify-center bg-blue-600 text-white rounded-md h-12 min-w-[48px] px-3.5 transition-colors hover:bg-blue-700 shadow-lg shadow-blue-600/20 outline-none overflow-hidden"
             whileHover="hover"
             initial="initial"
