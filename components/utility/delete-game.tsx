@@ -41,7 +41,7 @@ export function DeleteGameDialog({ _id, id, onDelete }: DeleteGameDialogProps) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <button type="button" aria-label="Delete game">
-          <Trash className="w-4 h-4 cursor-pointer hover:text-red-400 transition" />
+          <Trash className="w-4 h-4 cursor-pointer text-red-600 hover:text-red-500 transition-colors" />
         </button>
       </DialogTrigger>
       <DialogContent>

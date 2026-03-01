@@ -49,7 +49,7 @@ export function EditGameDialog({ _id, id, name, url, onUpdated }: EditGameDialog
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <button type="button" aria-label="Edit game">
-          <SquarePen className="w-4 h-4 cursor-pointer hover:text-blue-400 transition" />
+          <SquarePen className="w-4 h-4 cursor-pointer text-blue-500 hover:text-blue-400 transition-colors" />
         </button>
       </DialogTrigger>
       <DialogContent>
